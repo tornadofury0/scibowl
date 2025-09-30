@@ -1,0 +1,239 @@
+/* General Layout */
+body {
+  background: #181a1f;
+  color: #f4f4f4;
+  font-family: "Inter", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.app-container {
+  max-width: 800px;
+  width: 90%;
+  margin: 40px auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Titles */
+h1 {
+  font-size: 2.2rem;
+  margin-bottom: 25px;
+  color: #61dafb;
+  text-shadow: 0px 0px 12px rgba(97, 218, 251, 0.5);
+}
+
+h2, h3 {
+  margin-bottom: 15px;
+  color: #f0f0f0;
+}
+
+/* Cards */
+.card {
+  background: #242731;
+  padding: 20px;
+  border-radius: 15px;
+  margin: 20px 0;
+  box-shadow: 0px 4px 15px rgba(0,0,0,0.4);
+  text-align: left;
+}
+
+/* Form controls */
+.form-group {
+  margin: 15px 0;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #ddd;
+}
+
+input[type="number"],
+input[type="text"] {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  background: #2e323d;
+  color: #fff;
+}
+
+input:disabled {
+  opacity: 0.6;
+}
+
+.small-link {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #bbb;
+}
+
+.small-link a {
+  color: #61dafb;
+  text-decoration: none;
+}
+
+.small-link a:hover {
+  text-decoration: underline;
+}
+
+/* Buttons */
+.button-group {
+  margin-top: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+  min-width: 120px;
+}
+
+.btn.primary {
+  background: #61dafb;
+  color: #1b1b1b;
+  font-weight: bold;
+}
+
+.btn.secondary {
+  background: #444a58;
+  color: #f4f4f4;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Question Display */
+.question-box {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  font-family: "Fira Code", monospace;
+  white-space: pre-wrap;
+  min-height: 150px;
+}
+
+/* Timer */
+.timer {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 15px 0;
+  color: #ff6b6b;
+  text-shadow: 0px 0px 10px rgba(255,107,107,0.6);
+}
+
+/* Answer Section */
+#answer-section {
+  text-align: center;
+}
+
+#answer {
+  font-size: 1.2rem;
+  padding: 10px;
+  width: 70%;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: none;
+  background: #2e323d;
+  color: #fff;
+  text-align: center;
+  max-width: 500px;
+}
+
+/* Results & Scores */
+#results, #scores {
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* Footer */
+footer {
+  margin-top: auto;
+  padding: 20px;
+  font-size: 0.9rem;
+  color: #aaa;
+  text-align: center;
+}
+
+footer a {
+  color: #61dafb;
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+/* ✅ Mobile Responsiveness */
+body.mobile .app-container {
+  margin: 20px auto;
+  width: 95%;
+}
+
+body.mobile h1 {
+  font-size: 1.6rem;
+}
+
+body.mobile .card {
+  padding: 15px;
+}
+
+body.mobile .btn {
+  width: 100%;
+  min-width: unset;
+  font-size: 1rem;
+}
+
+body.mobile #answer {
+  width: 100%;
+  font-size: 1rem;
+}
+
+body.mobile .timer {
+  font-size: 1.6rem;
+}
+
+body.mobile .question-box {
+  font-size: 1rem;
+  min-height: 120px;
+}
+
+
+/* Space Button */
+.space-button-wrapper {
+  margin: 10px 0 20px;
+  text-align: center;
+}
+
+.space-btn {
+  width: 200px;
+  background: #ffb347;
+  color: #1b1b1b;
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.space-btn:hover {
+  background: #ffa726;
+}
+
+
