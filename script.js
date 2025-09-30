@@ -1,5 +1,5 @@
 // CONFIGURATION: Set your backend URL
-const API_BASE_URL = "https://scibowl.myaddr.tools"; // Your Google Cloud VM backend
+const API_BASE_URL = "https://scibowl.chickenkiller.com"; // api url
 
 let typingJob = null;
 let currentQuestion = null;
