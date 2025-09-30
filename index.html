@@ -4,11 +4,44 @@
   <meta charset="UTF-8" />
   <title>tornadofury0's National Science Bowl Practice App</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .category-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .category-header:hover {
+      background: #e9ecef;
+    }
+    .category-header h2 {
+      margin: 0;
+    }
+    .collapse-icon {
+      font-size: 1.5em;
+      transition: transform 0.3s;
+    }
+    .collapse-icon.collapsed {
+      transform: rotate(-90deg);
+    }
+    .category-content {
+      max-height: 2000px;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    .category-content.collapsed {
+      max-height: 0;
+    }
+  </style>
 </head>
 <body>
   <div class="app-container">
     <h1>tornadofury0's National Science Bowl Practice App</h1>
-
     <!-- Controls Section -->
     <div id="controls" class="card">
       <h2>Settings</h2>
@@ -16,9 +49,8 @@
         <label for="speed">Typing Speed (ms/char):</label>
         <input type="number" id="speed" value="50" min="10" max="500" />
       </div>
-
       <div class="form-group">
-        <label for="gemini-key">Gemini API Key</label>
+        <label for="gemini-key">Gemini API Key (used to grade short answer questions)</label>
         <input 
           type="text" 
           id="gemini-key" 
@@ -31,39 +63,36 @@
           </a>.
         </p>
       </div>
-
       <div class="button-group">
         <button id="start" class="btn primary">Start</button>
         <button id="load-categories" class="btn secondary">Load Categories</button>
       </div>
     </div>
-
     <!-- Category selection -->
-    <div id="category-select" class="card"></div>
-
+    <div id="category-select" class="card">
+      <div class="category-header" onclick="toggleCategories()">
+        <h2>Select Categories</h2>
+        <span class="collapse-icon" id="collapse-icon">▼</span>
+      </div>
+      <div class="category-content" id="category-content"></div>
+    </div>
     <!-- Question display -->
     <div id="question" class="card question-box"></div>
-
     <!-- Timer display -->
     <div id="timer" class="timer"></div>
-
     <!-- Space Button -->
     <div class="space-button-wrapper">
       <button id="space-btn" class="btn space-btn">Space</button>
     </div>
-
     <!-- Answer section -->
     <div id="answer-section" class="card" style="display:none;">
       <input type="text" id="answer" placeholder="Type your answer..." disabled />
       <button id="submit" class="btn primary">Submit</button>
     </div>
-
     <!-- Results display -->
     <div id="results" class="card"></div>
-
     <!-- Scores by category -->
     <div id="scores" class="card"></div>
-
     <!-- Footer -->
     <footer>
       <p>
@@ -72,8 +101,14 @@
       </p>
     </footer>
   </div>
-
+  <script>
+    function toggleCategories() {
+      const content = document.getElementById('category-content');
+      const icon = document.getElementById('collapse-icon');
+      content.classList.toggle('collapsed');
+      icon.classList.toggle('collapsed');
+    }
+  </script>
   <script src="script.js"></script>
 </body>
 </html>
-
