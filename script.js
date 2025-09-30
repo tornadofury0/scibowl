@@ -1,10 +1,7 @@
-const QUESTION_URL =
-  "https://raw.githubusercontent.com/tornadofury0/National-Science-Bowl-Questions/refs/heads/main/all_questions.json";
-
+// CONFIGURATION: Set your backend URL
+const API_BASE_URL = "http://104.154.189.254:8080"; // Your Google Cloud VM backend
 
 let typingJob = null;
-let allQuestions = [];
-let questions = [];
 let currentQuestion = null;
 let typingInterval = null;
 let geminiApiKey = "";
@@ -15,6 +12,7 @@ let waitingForNext = false;
 
 // track scores for each category
 let scores = {};
+let availableCategories = [];
 
 async function initGemini() {
   const keyInput = document.getElementById("gemini-key");
@@ -26,35 +24,37 @@ async function initGemini() {
   return true;
 }
 
-
-async function loadQuestions() {
-  const res = await fetch(QUESTION_URL);
-  const data = await res.json();
-  allQuestions = data.questions.filter((q) => q.bonus === false);
-  showCategorySelection();
+async function loadCategories() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/categories`);
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+    availableCategories = data.categories;
+    showCategorySelection();
+  } catch (error) {
+    console.error("Error loading categories:", error);
+    alert("Failed to load categories. Make sure the backend server is running.");
+  }
 }
-
 
 function detectMobile() {
   const ua = navigator.userAgent.toLowerCase();
-  // Mobile browsers usually have "mobi" in the UA
   return /mobi|android|iphone|ipad/i.test(ua);
 }
 
-// ad a class to <body>
+// add a class to <body>
 if (detectMobile()) {
   document.body.classList.add("mobile");
 } else {
   document.body.classList.add("desktop");
 }
 
-
-
 function showCategorySelection() {
-  const categories = [...new Set(allQuestions.map((q) => q.category))].sort();
   const container = document.getElementById("category-select");
   container.innerHTML = "<h3>Choose categories:</h3>";
-  categories.forEach((cat) => {
+  availableCategories.forEach((cat) => {
     const id = "cat_" + cat.replace(/\s+/g, "_");
     container.innerHTML += `
       <label>
@@ -63,8 +63,6 @@ function showCategorySelection() {
     `;
   });
 }
-
-
 
 function getSelectedCategories() {
   const checkboxes = document.querySelectorAll("#category-select input[type=checkbox]");
@@ -150,8 +148,6 @@ function buzz() {
   startTimer(8, submitAnswer);
 }
 
-
-
 async function checkWithGemini(userAns, correctAns) {
   if (!geminiApiKey) return false;
   const prompt = `
@@ -218,7 +214,7 @@ async function submitAnswer() {
   waitingForNext = true;
 }
 
-function nextQuestion() {
+async function nextQuestion() {
   // clear everything for new question
   document.getElementById("results").textContent = "";
   document.getElementById("answer").value = "";
@@ -227,38 +223,50 @@ function nextQuestion() {
   buzzed = false;
   waitingForNext = false;
 
-  // filter by selected categories
+  // get selected categories
   const selectedCats = getSelectedCategories();
-  const pool = allQuestions.filter(q => selectedCats.includes(q.category));
-  if (pool.length === 0) {
-    document.getElementById("question").textContent = "No questions in selected categories! Press the Load Categories button";
+  if (selectedCats.length === 0) {
+    document.getElementById("question").textContent = "Please select at least one category!";
     return;
   }
 
-  // random question from pool
-  currentQuestion = pool[Math.floor(Math.random() * pool.length)];
+  try {
+    // Request ONE question from backend
+    const res = await fetch(`${API_BASE_URL}/api/question`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ categories: selectedCats })
+    });
 
-  // format the full question text
-  const questionType = currentQuestion.type || "Unknown";
-  const fullText = `TYPE: ${questionType}\nCATEGORY: ${currentQuestion.category}\n\n${currentQuestion.parsed_question}`;
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
 
-  // start the typing animation
-  showQuestion(fullText);
+    const data = await res.json();
+    currentQuestion = data.question;
+
+    // format the full question text
+    const questionType = currentQuestion.type || "Unknown";
+    const fullText = `TYPE: ${questionType}\nCATEGORY: ${currentQuestion.category}\n\n${currentQuestion.parsed_question}`;
+
+    // start the typing animation
+    showQuestion(fullText);
+  } catch (error) {
+    console.error("Error fetching question:", error);
+    document.getElementById("question").textContent = "Error loading question. Check console and make sure backend is running.";
+  }
 }
-
 
 document.getElementById("start").addEventListener("click", async () => {
   const ok = await initGemini();
   if (!ok) return; // bail if no API key
-  // await loadQuestions();
   updateScores();
   nextQuestion();
 });
 
-
 document.getElementById("load-categories").addEventListener("click", async () => {
-    // loads questions and shows category checkboxes
-    await loadQuestions();
+  // loads categories from backend
+  await loadCategories();
 });
 
 document.getElementById("submit").addEventListener("click", submitAnswer);
@@ -268,7 +276,6 @@ document.getElementById("answer").addEventListener("keydown", (e) => {
     submitAnswer();
   }
 });
-
 
 // spacebar to buzz, but not when typing in answer box
 document.addEventListener("keydown", (e) => {
@@ -280,7 +287,6 @@ document.addEventListener("keydown", (e) => {
     buzz();
   }
 });
-
 
 // space button acts like spacebar
 document.getElementById("space-btn").addEventListener("click", () => {
