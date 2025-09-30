@@ -1,4 +1,4 @@
-this is the new version of https://github.com/tornadofury0/SciBowl-Practice
+this is the new version of SciBowl-Practice
 
 <h1>Usage:</h1>
 
