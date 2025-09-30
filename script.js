@@ -1,5 +1,5 @@
 // CONFIGURATION: Set your backend URL
-const API_BASE_URL = "http://104.154.189.254.ip.addr.tools:8080"; // Your Google Cloud VM backend
+const API_BASE_URL = "https://scibowl.myaddr.tools/health:8080"; // Your Google Cloud VM backend
 
 let typingJob = null;
 let currentQuestion = null;
