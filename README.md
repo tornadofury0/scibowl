@@ -1,4 +1,4 @@
-<h2>HUGE thanks to pyukey (https://github.com/pyukey) for compiling the questions</h2>
+<h2>HUGE thanks to Andrey (https://github.com/pyukey) for compiling the questions</h2>
 
 this is the new version of SciBowl-Practice
 
