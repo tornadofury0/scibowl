@@ -1,3 +1,5 @@
+<h2>HUGE thanks to pyukey (https://github.com/pyukey) for compiling the questions</h2>
+
 this is the new version of SciBowl-Practice
 
 <h1>Usage:</h1>
