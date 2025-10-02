@@ -1,6 +1,11 @@
-// CONFIGURATION: Set your backend URL
-const API_BASE_URL = "https://scibowl.chickenkiller.com"; // api url
+const API_URLS = [
+  "https://scibowl.chickenkiller.com",
+  "https://scibowl.myaddr.tools",
+  "https://scibowl.myaddr.dev",
+  "https://scibowl.myaddr.io"
+];
 
+let currentAPIIndex = 0;
 let typingJob = null;
 let currentQuestion = null;
 let typingInterval = null;
@@ -14,6 +19,29 @@ let waitingForNext = false;
 let scores = {};
 let availableCategories = [];
 
+// try different urls to see which ones work
+async function fetchWithFallback(endpoint, options = {}) {
+  for (let i = 0; i < API_URLS.length; i++) {
+    const urlIndex = (currentAPIIndex + i) % API_URLS.length;
+    const url = API_URLS[urlIndex] + endpoint;
+    
+    try {
+      const response = await fetch(url, options);
+      if (response.ok) {
+        // yay! remember this URL so you dont have to do this every time you need a new question
+        currentAPIIndex = urlIndex;
+        return response;
+      }
+    } catch (error) {
+      console.log(`Failed to fetch from ${API_URLS[urlIndex]}, trying next...`);
+      // try next url
+    }
+  }
+  
+  // all urls failed
+  throw new Error('All backend URLs failed. Make sure any ONE of these urls is unblocked, they may all be blocked on school WiFi: ${API_URLS}');
+}
+
 async function initGemini() {
   const keyInput = document.getElementById("gemini-key");
   geminiApiKey = keyInput.value.trim();
@@ -26,16 +54,13 @@ async function initGemini() {
 
 async function loadCategories() {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/categories`);
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
+    const res = await fetchWithFallback('/api/categories');
     const data = await res.json();
     availableCategories = data.categories;
     showCategorySelection();
   } catch (error) {
     console.error("Error loading categories:", error);
-    alert("Failed to load categories. Make sure the backend server is running.");
+    alert("Failed to load categories from all backend servers. Check your internet connection.");
   }
 }
 
@@ -231,16 +256,12 @@ async function nextQuestion() {
   }
 
   try {
-    // Request ONE question from backend
-    const res = await fetch(`${API_BASE_URL}/api/question`, {
+    // Request ONE question from backend with fallback
+    const res = await fetchWithFallback('/api/question', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ categories: selectedCats })
     });
-
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
 
     const data = await res.json();
     currentQuestion = data.question;
@@ -253,7 +274,7 @@ async function nextQuestion() {
     showQuestion(fullText);
   } catch (error) {
     console.error("Error fetching question:", error);
-    document.getElementById("question").textContent = "Error loading question. Check console and make sure backend is running.";
+    document.getElementById("question").textContent = "Error loading question from all servers. Check your connection.";
   }
 }
 
