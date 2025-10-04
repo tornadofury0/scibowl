@@ -179,11 +179,11 @@ async function checkWithGemini(userAns, correctAns) {
 The user was asked a question.
 Correct answer: "${correctAns}"
 User answer: "${userAns}"
-Is the user's answer correct? Only reply "Yes" or "No".
+Is the user's answer correct? Be a little leinient on spelling and accept equivalent answers Only reply "Yes" or "No".
   `;
   try {
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
         geminiApiKey,
       {
         method: "POST",
