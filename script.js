@@ -1,3 +1,4 @@
+// CONFIGURATION: Multiple backend URLs with automatic fallback
 const API_URLS = [
   "https://scibowl.chickenkiller.com",
   "https://scibowl.myaddr.tools",
@@ -9,7 +10,6 @@ let currentAPIIndex = 0;
 let typingJob = null;
 let currentQuestion = null;
 let typingInterval = null;
-let geminiApiKey = "";
 let timeLeft = 0;
 let timerId = null;
 let buzzed = false;
@@ -19,8 +19,11 @@ let waitingForNext = false;
 let scores = {};
 let availableCategories = [];
 
-// try different urls to see which ones work
+// Try fetching from different backend URLs until one works
 async function fetchWithFallback(endpoint, options = {}) {
+  // Ensure credentials are included for cookies
+  options.credentials = 'include';
+  
   for (let i = 0; i < API_URLS.length; i++) {
     const urlIndex = (currentAPIIndex + i) % API_URLS.length;
     const url = API_URLS[urlIndex] + endpoint;
@@ -28,28 +31,18 @@ async function fetchWithFallback(endpoint, options = {}) {
     try {
       const response = await fetch(url, options);
       if (response.ok) {
-        // yay! remember this URL so you dont have to do this every time you need a new question
+        // Success! Remember this URL for next time
         currentAPIIndex = urlIndex;
         return response;
       }
     } catch (error) {
       console.log(`Failed to fetch from ${API_URLS[urlIndex]}, trying next...`);
-      // try next url
+      // Continue to next URL
     }
   }
   
-  // all urls failed
-  throw new Error('All backend URLs failed. Make sure any ONE of these urls is unblocked, they may all be blocked on school WiFi: ${API_URLS}');
-}
-
-async function initGemini() {
-  const keyInput = document.getElementById("gemini-key");
-  geminiApiKey = keyInput.value.trim();
-  if (!geminiApiKey) {
-    alert("Please enter your Gemini API key!");
-    return false;
-  }
-  return true;
+  // All URLs failed
+  throw new Error('All backend URLs failed');
 }
 
 async function loadCategories() {
@@ -173,31 +166,21 @@ function buzz() {
   startTimer(8, submitAnswer);
 }
 
-async function checkWithGemini(userAns, correctAns) {
-  if (!geminiApiKey) return false;
-  const prompt = `
-The user was asked a question.
-Correct answer: "${correctAns}"
-User answer: "${userAns}"
-Is the user's answer correct? Be a little leinient on spelling and accept equivalent answers Only reply "Yes" or "No".
-  `;
+async function checkWithBackend(userAns, correctAns) {
   try {
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
-        geminiApiKey,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-        }),
-      }
-    );
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-    return text && text.toLowerCase().startsWith("yes");
-  } catch (e) {
-    console.error("Gemini error", e);
+    const res = await fetchWithFallback('/api/check-answer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userAnswer: userAns,
+        correctAnswer: correctAns
+      })
+    });
+    
+    const data = await res.json();
+    return data.isCorrect;
+  } catch (error) {
+    console.error("Error checking answer:", error);
     return false;
   }
 }
@@ -219,7 +202,7 @@ async function submitAnswer() {
     const userUp = userAns.toUpperCase();
     isCorrect = userUp.startsWith(correctLetter) || userUp === correctText;
   } else {
-    isCorrect = await checkWithGemini(userAns, correctAns);
+    isCorrect = await checkWithBackend(userAns, correctAns);
   }
 
   if (isCorrect) {
@@ -279,8 +262,6 @@ async function nextQuestion() {
 }
 
 document.getElementById("start").addEventListener("click", async () => {
-  const ok = await initGemini();
-  if (!ok) return; // bail if no API key
   updateScores();
   nextQuestion();
 });
