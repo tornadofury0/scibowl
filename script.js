@@ -201,9 +201,9 @@ async function submitAnswer() {
   let isCorrect = false;
   if (currentQuestion.type.toLowerCase().includes("multiple")) {
     // for multiple choice: accept either the letter (A, B, C...) or full answer text
-    const match = correctAns.match(/^([A-Z])\)/);
+    const match = correctAns.match(/^([A-Z])[:\)]/);
     const correctLetter = match ? match[1].toUpperCase() : "";
-    const correctText = correctAns.replace(/^[A-Z]\)/, "").trim().toUpperCase();
+    const correctText = correctAns.replace(/^[A-Z][:\)]/, "").trim().toUpperCase();
 
     const userUp = userAns.toUpperCase().trim();
     // Check if user entered just the letter or the full text
