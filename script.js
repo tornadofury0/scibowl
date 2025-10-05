@@ -97,6 +97,12 @@ function updateScores() {
 }
 
 function showQuestion(q) {
+  // Clear any existing typing interval first
+  if (typingInterval) {
+    clearInterval(typingInterval);
+    typingInterval = null;
+  }
+  
   const qDiv = document.getElementById("question");
   qDiv.textContent = "";
   const speed = parseInt(document.getElementById("speed").value) || 50;
@@ -230,6 +236,15 @@ async function submitAnswer() {
 
 async function nextQuestion() {
   // clear everything for new question
+  if (typingInterval) {
+    clearInterval(typingInterval);
+    typingInterval = null;
+  }
+  if (timerId) {
+    clearInterval(timerId);
+    timerId = null;
+  }
+  
   document.getElementById("results").textContent = "";
   document.getElementById("answer").value = "";
   document.getElementById("answer").disabled = true;
