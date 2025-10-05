@@ -202,7 +202,13 @@ async function submitAnswer() {
     const userUp = userAns.toUpperCase();
     isCorrect = userUp.startsWith(correctLetter) || userUp === correctText;
   } else {
-    isCorrect = await checkWithBackend(userAns, correctAns);
+    // Short answer: check for exact match first (case-insensitive)
+    if (userAns.toLowerCase() === correctAns.toLowerCase()) {
+      isCorrect = true;
+    } else {
+      // Not exact match, check with Gemini API
+      isCorrect = await checkWithBackend(userAns, correctAns);
+    }
   }
 
   if (isCorrect) {
