@@ -16,31 +16,30 @@
         <label for="speed">Typing Speed (ms/char):</label>
         <input type="number" id="speed" value="50" min="10" max="500" />
       </div>
-
       <div class="button-group">
-        <button id="start" class="btn primary">Start Practice</button>
+        <button id="start" class="btn primary">Start</button>
         <button id="load-categories" class="btn secondary">Load Categories</button>
       </div>
     </div>
     
-    <div id="category-select" class="card" style="display:none;"></div>
+    <div id="category-select" class="card"></div>
     
-    <div id="question" class="card question-box" style="display:none;"></div>
+    <div id="question" class="card question-box"></div>
     
-    <div id="timer" class="timer" style="display:none;"></div>
+    <div id="timer" class="timer"></div>
     
     <div class="space-button-wrapper">
       <button id="space-btn" class="btn space-btn">Buzz</button>
     </div>
     
     <div id="answer-section" class="card" style="display:none;">
-      <input type="text" id="answer" placeholder="Type your answer here..." disabled />
-      <button id="submit" class="btn primary">Submit Answer</button>
+      <input type="text" id="answer" placeholder="Type your answer..." disabled />
+      <button id="submit" class="btn primary">Submit</button>
     </div>
     
-    <div id="results" class="card" style="display:none;"></div>
+    <div id="results" class="card"></div>
     
-    <div id="scores" class="card" style="display:none;"></div>
+    <div id="scores" class="card"></div>
     
     <footer>
       <p>
