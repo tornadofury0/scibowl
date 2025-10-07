@@ -1,4 +1,4 @@
-// CONFIGURATION: Multiple backend URLs with automatic fallback
+// multiple free dynamic dns urls pointing to backend server in case one is down or blocked on school wifi
 const API_URLS = [
   "https://scibowl.chickenkiller.com",
   "https://scibowl.myaddr.tools",
@@ -225,6 +225,16 @@ async function submitAnswer() {
   }
   updateScores();
 
+  // Track answer submission in Google Analytics
+  if (typeof gtag !== 'undefined') {
+    gtag('event', 'answer_submitted', {
+      'event_category': 'Answers',
+      'event_label': category,
+      'correct': isCorrect,
+      'question_type': currentQuestion.type
+    });
+  }
+
   document.getElementById("results").textContent = `Q: ${
     currentQuestion.parsed_question
   }\nCorrect: ${correctAns}\nYour Answer: ${userAns || "(none)"}\n${
@@ -270,6 +280,15 @@ async function nextQuestion() {
 
     const data = await res.json();
     currentQuestion = data.question;
+
+    // Track question request in Google Analytics
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'question_requested', {
+        'event_category': 'Questions',
+        'event_label': currentQuestion.category,
+        'question_type': currentQuestion.type
+      });
+    }
 
     // format the full question text
     const questionType = currentQuestion.type || "Unknown";
