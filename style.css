@@ -307,10 +307,7 @@ input:disabled {
   overflow: hidden;
 }
 
-.space-btn::after {
-  content: '⌨️';
-  margin-left: 10px;
-}
+
 
 .space-btn:hover {
   transform: translateY(-3px) scale(1.05);
