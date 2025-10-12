@@ -228,7 +228,6 @@ function showQuestion(q) {
     
   }, speed);
 }
-
 function updateTimer() {
   const tDiv = document.getElementById("timer");
   tDiv.textContent = "⏱ " + timeLeft;
