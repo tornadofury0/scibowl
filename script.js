@@ -19,6 +19,21 @@ let waitingForNext = false;
 let scores = {};
 let availableCategories = [];
 
+// LaTeX rendering function
+function renderLatex(element) {
+  if (typeof renderMathInElement !== 'undefined') {
+    renderMathInElement(element, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "$", right: "$", display: false},
+        {left: "\\[", right: "\\]", display: true},
+        {left: "\\(", right: "\\)", display: false}
+      ],
+      throwOnError: false
+    });
+  }
+}
+
 // Try fetching from different backend URLs until one works
 async function fetchWithFallback(endpoint, options = {}) {
   // Ensure credentials are included for cookies
@@ -111,8 +126,12 @@ function showQuestion(q) {
     if (i < q.length) {
       qDiv.textContent += q[i];
       i++;
+      // Render LaTeX as text appears
+      renderLatex(qDiv);
     } else {
       clearInterval(typingInterval);
+      // Final render after all text is shown
+      renderLatex(qDiv);
       startTimer(5, () => {
         if (!buzzed) {
           document.getElementById("results").textContent =
@@ -235,11 +254,15 @@ async function submitAnswer() {
     });
   }
 
-  document.getElementById("results").textContent = `Q: ${
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.textContent = `Q: ${
     currentQuestion.parsed_question
   }\nCorrect: ${correctAns}\nYour Answer: ${userAns || "(none)"}\n${
     isCorrect ? "✅ Correct!" : "❌ Wrong!"
   }`;
+  
+  // Render LaTeX in results
+  renderLatex(resultsDiv);
 
   document.getElementById("answer").disabled = true;
   waitingForNext = true;
@@ -334,4 +357,9 @@ document.addEventListener("keydown", (e) => {
 // space button acts like spacebar
 document.getElementById("space-btn").addEventListener("click", () => {
   buzz();
+});
+
+// Auto-render LaTeX on page load
+document.addEventListener("DOMContentLoaded", function() {
+  renderLatex(document.body);
 });
