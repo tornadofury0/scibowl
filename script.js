@@ -122,61 +122,74 @@ function showQuestion(q) {
   qDiv.innerHTML = "";
   const speed = parseInt(document.getElementById("speed").value) || 50;
   
-  // Split text into segments: regular text and LaTeX
-  const segments = [];
-  let currentPos = 0;
-  const latexPatterns = [
-    { start: '$$', end: '$$', display: true },
-    { start: '$', end: '$', display: false },
-    { start: '\\[', end: '\\]', display: true },
-    { start: '\\(', end: '\\)', display: false }
+  // Parse the string to find LaTeX segments
+  const parts = [];
+  let remaining = q;
+  const delimiters = [
+    { start: '$$', end: '$$' },
+    { start: '\\[', end: '\\]' },
+    { start: '\\(', end: '\\)' },
+    { start: '$', end: '$' }
   ];
   
-  while (currentPos < q.length) {
-    let foundLatex = false;
+  while (remaining.length > 0) {
+    let earliestMatch = null;
+    let earliestPos = remaining.length;
+    let matchedDelim = null;
     
-    // Check for LaTeX delimiters
-    for (const pattern of latexPatterns) {
-      if (q.substring(currentPos).startsWith(pattern.start)) {
-        // Find the end delimiter
-        const endPos = q.indexOf(pattern.end, currentPos + pattern.start.length);
-        if (endPos !== -1) {
-          const latexContent = q.substring(currentPos, endPos + pattern.end.length);
-          segments.push({ type: 'latex', content: latexContent });
-          currentPos = endPos + pattern.end.length;
-          foundLatex = true;
-          break;
-        }
+    // Find the earliest LaTeX delimiter
+    for (const delim of delimiters) {
+      const pos = remaining.indexOf(delim.start);
+      if (pos !== -1 && pos < earliestPos) {
+        earliestPos = pos;
+        matchedDelim = delim;
+        earliestMatch = pos;
       }
     }
     
-    if (!foundLatex) {
-      // Regular text - find next LaTeX delimiter or end of string
-      let nextLatexPos = q.length;
-      for (const pattern of latexPatterns) {
-        const pos = q.indexOf(pattern.start, currentPos);
-        if (pos !== -1 && pos < nextLatexPos) {
-          nextLatexPos = pos;
-        }
+    if (earliestMatch !== null && matchedDelim) {
+      // Add text before LaTeX
+      if (earliestMatch > 0) {
+        parts.push({ type: 'text', content: remaining.substring(0, earliestMatch) });
       }
       
-      const textContent = q.substring(currentPos, nextLatexPos);
-      if (textContent.length > 0) {
-        segments.push({ type: 'text', content: textContent });
+      // Find end of LaTeX
+      const startLen = matchedDelim.start.length;
+      const endPos = remaining.indexOf(matchedDelim.end, earliestMatch + startLen);
+      
+      if (endPos !== -1) {
+        const latexSegment = remaining.substring(earliestMatch, endPos + matchedDelim.end.length);
+        parts.push({ type: 'latex', content: latexSegment });
+        remaining = remaining.substring(endPos + matchedDelim.end.length);
+      } else {
+        // No closing delimiter found, treat as text
+        parts.push({ type: 'text', content: remaining });
+        remaining = '';
       }
-      currentPos = nextLatexPos;
+    } else {
+      // No more LaTeX found
+      if (remaining.length > 0) {
+        parts.push({ type: 'text', content: remaining });
+      }
+      remaining = '';
     }
   }
   
-  // Now animate through segments
-  let segmentIndex = 0;
+  // Now animate
+  let partIndex = 0;
   let charIndex = 0;
-  let displayedContent = "";
+  let built = '';
   
   typingInterval = setInterval(() => {
-    if (segmentIndex >= segments.length) {
+    if (partIndex >= parts.length) {
       clearInterval(typingInterval);
+      const escaped = built.replace(/&/g, '&amp;')
+                          .replace(/</g, '&lt;')
+                          .replace(/>/g, '&gt;')
+                          .replace(/\n/g, '<br>');
+      qDiv.innerHTML = escaped;
       renderLatex(qDiv);
+      
       startTimer(5, () => {
         if (!buzzed) {
           document.getElementById("results").textContent =
@@ -187,37 +200,32 @@ function showQuestion(q) {
       return;
     }
     
-    const segment = segments[segmentIndex];
+    const part = parts[partIndex];
     
-    if (segment.type === 'latex') {
-      // Display entire LaTeX segment at once
-      displayedContent += segment.content;
-      segmentIndex++;
+    if (part.type === 'latex') {
+      // Add entire LaTeX at once
+      built += part.content;
+      partIndex++;
       charIndex = 0;
-      
-      const escaped = displayedContent.replace(/&/g, '&amp;')
-                                      .replace(/</g, '&lt;')
-                                      .replace(/>/g, '&gt;')
-                                      .replace(/\n/g, '<br>');
-      qDiv.innerHTML = escaped;
-      renderLatex(qDiv);
     } else {
-      // Type out regular text character by character
-      if (charIndex < segment.content.length) {
-        displayedContent += segment.content[charIndex];
+      // Add one character of text
+      if (charIndex < part.content.length) {
+        built += part.content[charIndex];
         charIndex++;
-        
-        const escaped = displayedContent.replace(/&/g, '&amp;')
-                                        .replace(/</g, '&lt;')
-                                        .replace(/>/g, '&gt;')
-                                        .replace(/\n/g, '<br>');
-        qDiv.innerHTML = escaped;
-        renderLatex(qDiv);
       } else {
-        segmentIndex++;
+        partIndex++;
         charIndex = 0;
+        return; // Skip to next iteration
       }
     }
+    
+    const escaped = built.replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/\n/g, '<br>');
+    qDiv.innerHTML = escaped;
+    renderLatex(qDiv);
+    
   }, speed);
 }
 
