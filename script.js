@@ -119,12 +119,20 @@ function showQuestion(q) {
   }
   
   const qDiv = document.getElementById("question");
-  qDiv.textContent = "";
+  qDiv.innerHTML = ""; // Changed from textContent to innerHTML
   const speed = parseInt(document.getElementById("speed").value) || 50;
   let i = 0;
+  let tempText = "";
+  
   typingInterval = setInterval(() => {
     if (i < q.length) {
-      qDiv.textContent += q[i];
+      tempText += q[i];
+      // Escape HTML to prevent injection, but preserve newlines
+      const escaped = tempText.replace(/&/g, '&amp;')
+                              .replace(/</g, '&lt;')
+                              .replace(/>/g, '&gt;')
+                              .replace(/\n/g, '<br>');
+      qDiv.innerHTML = escaped;
       i++;
       // Render LaTeX as text appears
       renderLatex(qDiv);
@@ -255,11 +263,14 @@ async function submitAnswer() {
   }
 
   const resultsDiv = document.getElementById("results");
-  resultsDiv.textContent = `Q: ${
-    currentQuestion.parsed_question
-  }\nCorrect: ${correctAns}\nYour Answer: ${userAns || "(none)"}\n${
-    isCorrect ? "✅ Correct!" : "❌ Wrong!"
-  }`;
+  const resultText = `Q: ${currentQuestion.parsed_question}\nCorrect: ${correctAns}\nYour Answer: ${userAns || "(none)"}\n${isCorrect ? "✅ Correct!" : "❌ Wrong!"}`;
+  
+  // Escape HTML and preserve newlines
+  const escaped = resultText.replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/\n/g, '<br>');
+  resultsDiv.innerHTML = escaped;
   
   // Render LaTeX in results
   renderLatex(resultsDiv);
