@@ -119,26 +119,63 @@ function showQuestion(q) {
   }
   
   const qDiv = document.getElementById("question");
-  qDiv.innerHTML = ""; // Changed from textContent to innerHTML
+  qDiv.innerHTML = "";
   const speed = parseInt(document.getElementById("speed").value) || 50;
-  let i = 0;
-  let tempText = "";
+  
+  // Split text into segments: regular text and LaTeX
+  const segments = [];
+  let currentPos = 0;
+  const latexPatterns = [
+    { start: '$$', end: '$$', display: true },
+    { start: '$', end: '$', display: false },
+    { start: '\\[', end: '\\]', display: true },
+    { start: '\\(', end: '\\)', display: false }
+  ];
+  
+  while (currentPos < q.length) {
+    let foundLatex = false;
+    
+    // Check for LaTeX delimiters
+    for (const pattern of latexPatterns) {
+      if (q.substring(currentPos).startsWith(pattern.start)) {
+        // Find the end delimiter
+        const endPos = q.indexOf(pattern.end, currentPos + pattern.start.length);
+        if (endPos !== -1) {
+          const latexContent = q.substring(currentPos, endPos + pattern.end.length);
+          segments.push({ type: 'latex', content: latexContent });
+          currentPos = endPos + pattern.end.length;
+          foundLatex = true;
+          break;
+        }
+      }
+    }
+    
+    if (!foundLatex) {
+      // Regular text - find next LaTeX delimiter or end of string
+      let nextLatexPos = q.length;
+      for (const pattern of latexPatterns) {
+        const pos = q.indexOf(pattern.start, currentPos);
+        if (pos !== -1 && pos < nextLatexPos) {
+          nextLatexPos = pos;
+        }
+      }
+      
+      const textContent = q.substring(currentPos, nextLatexPos);
+      if (textContent.length > 0) {
+        segments.push({ type: 'text', content: textContent });
+      }
+      currentPos = nextLatexPos;
+    }
+  }
+  
+  // Now animate through segments
+  let segmentIndex = 0;
+  let charIndex = 0;
+  let displayedContent = "";
   
   typingInterval = setInterval(() => {
-    if (i < q.length) {
-      tempText += q[i];
-      // Escape HTML to prevent injection, but preserve newlines
-      const escaped = tempText.replace(/&/g, '&amp;')
-                              .replace(/</g, '&lt;')
-                              .replace(/>/g, '&gt;')
-                              .replace(/\n/g, '<br>');
-      qDiv.innerHTML = escaped;
-      i++;
-      // Render LaTeX as text appears
-      renderLatex(qDiv);
-    } else {
+    if (segmentIndex >= segments.length) {
       clearInterval(typingInterval);
-      // Final render after all text is shown
       renderLatex(qDiv);
       startTimer(5, () => {
         if (!buzzed) {
@@ -147,21 +184,41 @@ function showQuestion(q) {
           waitingForNext = true;
         }
       });
+      return;
+    }
+    
+    const segment = segments[segmentIndex];
+    
+    if (segment.type === 'latex') {
+      // Display entire LaTeX segment at once
+      displayedContent += segment.content;
+      segmentIndex++;
+      charIndex = 0;
+      
+      const escaped = displayedContent.replace(/&/g, '&amp;')
+                                      .replace(/</g, '&lt;')
+                                      .replace(/>/g, '&gt;')
+                                      .replace(/\n/g, '<br>');
+      qDiv.innerHTML = escaped;
+      renderLatex(qDiv);
+    } else {
+      // Type out regular text character by character
+      if (charIndex < segment.content.length) {
+        displayedContent += segment.content[charIndex];
+        charIndex++;
+        
+        const escaped = displayedContent.replace(/&/g, '&amp;')
+                                        .replace(/</g, '&lt;')
+                                        .replace(/>/g, '&gt;')
+                                        .replace(/\n/g, '<br>');
+        qDiv.innerHTML = escaped;
+        renderLatex(qDiv);
+      } else {
+        segmentIndex++;
+        charIndex = 0;
+      }
     }
   }, speed);
-}
-
-function startTimer(seconds, onEnd) {
-  timeLeft = seconds;
-  updateTimer();
-  timerId = setInterval(() => {
-    timeLeft--;
-    updateTimer();
-    if (timeLeft <= 0) {
-      clearInterval(timerId);
-      onEnd();
-    }
-  }, 1000);
 }
 
 function updateTimer() {
