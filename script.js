@@ -248,9 +248,13 @@ function startTimer(seconds, onEnd) {
 
 function updateTimer() {
   const tDiv = document.getElementById("timer");
-  tDiv.textContent = "⏱ " + timeLeft;
+  console.log("Timer element:", tDiv, "Time left:", timeLeft);
+  if (tDiv) {
+    tDiv.textContent = "⏱ " + timeLeft;
+  } else {
+    console.error("Timer element not found!");
+  }
 }
-
 function buzz() {
   if (waitingForNext) {
     nextQuestion();
