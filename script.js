@@ -111,6 +111,26 @@ function updateScores() {
   scoresDiv.innerHTML = html;
 }
 
+function startTimer(seconds, onEnd) {
+  timeLeft = seconds;
+  updateTimer();
+  timerId = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 0) {
+      clearInterval(timerId);
+      onEnd();
+    }
+  }, 1000);
+}
+
+function updateTimer() {
+  const tDiv = document.getElementById("timer");
+  if (tDiv) {
+    tDiv.textContent = "⏱ " + timeLeft;
+  }
+}
+
 function showQuestion(q) {
   // Fix over-escaped backslashes
   q = q.replace(/\\\\/g, '\\');
@@ -232,29 +252,6 @@ function showQuestion(q) {
   }, speed);
 }
 
-function startTimer(seconds, onEnd) {
-  timeLeft = seconds;
-  updateTimer();
-  timerId = setInterval(() => {
-    timeLeft--;
-    updateTimer();
-    if (timeLeft <= 0) {
-      clearInterval(timerId);
-      onEnd();
-    }
-  }, 1000);
-}
-
-
-function updateTimer() {
-  const tDiv = document.getElementById("timer");
-  console.log("Timer element:", tDiv, "Time left:", timeLeft);
-  if (tDiv) {
-    tDiv.textContent = "⏱ " + timeLeft;
-  } else {
-    console.error("Timer element not found!");
-  }
-}
 function buzz() {
   if (waitingForNext) {
     nextQuestion();
@@ -427,25 +424,7 @@ async function nextQuestion() {
   }
 }
 
-document.getElementById("start").addEventListener("click", async () => {
-  updateScores();
-  nextQuestion();
-});
-
-document.getElementById("load-categories").addEventListener("click", async () => {
-  // loads categories from backend
-  await loadCategories();
-});
-
-document.getElementById("submit").addEventListener("click", submitAnswer);
-document.getElementById("answer").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault(); // don't submit form
-    submitAnswer();
-  }
-});
-
-// spacebar to buzz, but not when typing in answer box
+// spacebar to buzz, but not when typing in answer box (this needs to be outside DOMContentLoaded)
 document.addEventListener("keydown", (e) => {
   if (e.code === "Space") {
     if (document.activeElement.id === "answer") {
@@ -456,12 +435,29 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// space button acts like spacebar
-document.getElementById("space-btn").addEventListener("click", () => {
-  buzz();
-});
-
-// Auto-render LaTeX on page load
+// Auto-render LaTeX on page load and setup event listeners
 document.addEventListener("DOMContentLoaded", function() {
   renderLatex(document.body);
+  
+  document.getElementById("start").addEventListener("click", async () => {
+    updateScores();
+    nextQuestion();
+  });
+
+  document.getElementById("load-categories").addEventListener("click", async () => {
+    await loadCategories();
+  });
+
+  document.getElementById("submit").addEventListener("click", submitAnswer);
+  
+  document.getElementById("answer").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submitAnswer();
+    }
+  });
+
+  document.getElementById("space-btn").addEventListener("click", () => {
+    buzz();
+  });
 });
