@@ -112,6 +112,9 @@ function updateScores() {
 }
 
 function showQuestion(q) {
+  // Fix over-escaped backslashes
+  q = q.replace(/\\\\/g, '\\');
+  
   // Clear any existing typing interval first
   if (typingInterval) {
     clearInterval(typingInterval);
@@ -228,6 +231,7 @@ function showQuestion(q) {
     
   }, speed);
 }
+
 function updateTimer() {
   const tDiv = document.getElementById("timer");
   tDiv.textContent = "⏱ " + timeLeft;
@@ -327,7 +331,12 @@ async function submitAnswer() {
   }
 
   const resultsDiv = document.getElementById("results");
-  const resultText = `Q: ${currentQuestion.parsed_question}\nCorrect: ${correctAns}\nYour Answer: ${userAns || "(none)"}\n${isCorrect ? "✅ Correct!" : "❌ Wrong!"}`;
+  
+  // Fix over-escaped backslashes in question and answer
+  const fixedQuestion = currentQuestion.parsed_question.replace(/\\\\/g, '\\');
+  const fixedAnswer = correctAns.replace(/\\\\/g, '\\');
+  
+  const resultText = `Q: ${fixedQuestion}\nCorrect: ${fixedAnswer}\nYour Answer: ${userAns || "(none)"}\n${isCorrect ? "✅ Correct!" : "❌ Wrong!"}`;
   
   // Escape HTML and preserve newlines
   const escaped = resultText.replace(/&/g, '&amp;')
