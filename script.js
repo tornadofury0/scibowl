@@ -232,6 +232,20 @@ function showQuestion(q) {
   }, speed);
 }
 
+function startTimer(seconds, onEnd) {
+  timeLeft = seconds;
+  updateTimer();
+  timerId = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 0) {
+      clearInterval(timerId);
+      onEnd();
+    }
+  }, 1000);
+}
+
+
 function updateTimer() {
   const tDiv = document.getElementById("timer");
   tDiv.textContent = "⏱ " + timeLeft;
