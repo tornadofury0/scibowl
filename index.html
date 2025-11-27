@@ -29,19 +29,29 @@
   <div class="app-container">
     <h1>National Science Bowl Buzzing Practice</h1>
     
-    <div id="controls" class="card">
-      <h2>Settings</h2>
-      <div class="form-group">
-        <label for="speed">Typing Speed (ms/char):</label>
-        <input type="number" id="speed" value="50" min="10" max="500" />
+    <div class="controls-row">
+      <div id="controls" class="card">
+        <h2>Settings</h2>
+        <div class="form-group">
+          <label for="speed">Typing Speed (ms/char):</label>
+          <input type="number" id="speed" value="50" min="10" max="500" />
+        </div>
+        <div class="button-group">
+          <button id="start" class="btn primary">Start</button>
+          <button id="load-categories" class="btn secondary">Load Categories (may take up to 30s)</button>
+        </div>
       </div>
-      <div class="button-group">
-        <button id="start" class="btn primary">Start</button>
-        <button id="load-categories" class="btn secondary">Load Categories (may take up to 30s)</button>
+
+      <div id="category-card" class="card">
+        <div class="card-title-row">
+          <h2>Choose Categories</h2>
+          <button id="toggle-categories" class="btn secondary compact">Collapse</button>
+        </div>
+        <div id="category-select" class="category-list">
+          <p class="muted">Load categories to choose from.</p>
+        </div>
       </div>
     </div>
-    
-    <div id="category-select" class="card"></div>
     
     <div id="question" class="card question-box"></div>
     
@@ -55,8 +65,17 @@
       <input type="text" id="answer" placeholder="Type your answer..." disabled />
       <button id="submit" class="btn primary">Submit</button>
     </div>
-    
+
     <div id="results" class="card"></div>
+
+    <div id="manual-controls" class="card" style="display:none;">
+      <h3>Manual Override</h3>
+      <p>Use these if the automatic checker gets it wrong.</p>
+      <div class="button-group">
+        <button id="mark-correct" class="btn secondary">Mark Correct</button>
+        <button id="mark-wrong" class="btn secondary">Mark Wrong</button>
+      </div>
+    </div>
     
     <div id="scores" class="card"></div>
     
