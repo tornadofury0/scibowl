@@ -14,6 +14,7 @@ let timeLeft = 0;
 let timerId = null;
 let buzzed = false;
 let waitingForNext = false;
+let currentResult = null;
 
 // track scores for each category
 let scores = {};
@@ -345,25 +346,23 @@ async function submitAnswer() {
     });
   }
 
-  const resultsDiv = document.getElementById("results");
-  
   // Fix over-escaped backslashes in question and answer
   const fixedQuestion = currentQuestion.parsed_question.replace(/\\\\/g, '\\');
   const fixedAnswer = correctAns.replace(/\\\\/g, '\\');
-  
-  const resultText = `Q: ${fixedQuestion}\nCorrect: ${fixedAnswer}\nYour Answer: ${userAns || "(none)"}\n${isCorrect ? "✅ Correct!" : "❌ Wrong!"}`;
-  
-  // Escape HTML and preserve newlines
-  const escaped = resultText.replace(/&/g, '&amp;')
-                            .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;')
-                            .replace(/\n/g, '<br>');
-  resultsDiv.innerHTML = escaped;
-  
-  // Render LaTeX in results
-  renderLatex(resultsDiv);
+
+  currentResult = {
+    questionText: fixedQuestion,
+    correctAnswer: fixedAnswer,
+    userAnswer: userAns || "(none)",
+    category,
+    isCorrect,
+    manualOverride: false
+  };
+
+  renderResult();
 
   document.getElementById("answer").disabled = true;
+  document.getElementById("manual-controls").style.display = "block";
   waitingForNext = true;
 }
 
@@ -382,8 +381,10 @@ async function nextQuestion() {
   document.getElementById("answer").value = "";
   document.getElementById("answer").disabled = true;
   document.getElementById("answer-section").style.display = "none";
+  document.getElementById("manual-controls").style.display = "none";
   buzzed = false;
   waitingForNext = false;
+  currentResult = null;
 
   // get selected categories
   const selectedCats = getSelectedCategories();
@@ -460,4 +461,50 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("space-btn").addEventListener("click", () => {
     buzz();
   });
+
+  document.getElementById("mark-correct").addEventListener("click", () => applyManualMark(true));
+  document.getElementById("mark-wrong").addEventListener("click", () => applyManualMark(false));
 });
+
+function renderResult() {
+  if (!currentResult) return;
+
+  const resultsDiv = document.getElementById("results");
+  const manualNote = currentResult.manualOverride
+    ? `\n(Manually marked ${currentResult.isCorrect ? "correct" : "wrong"})`
+    : "";
+
+  const resultText = `Q: ${currentResult.questionText}\nCorrect: ${currentResult.correctAnswer}\nYour Answer: ${currentResult.userAnswer}\n${currentResult.isCorrect ? "✅ Correct!" : "❌ Wrong!"}${manualNote}`;
+
+  const escaped = resultText.replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/\n/g, '<br>');
+  resultsDiv.innerHTML = escaped;
+  renderLatex(resultsDiv);
+}
+
+function applyManualMark(isCorrect) {
+  if (!currentResult) return;
+  const category = currentResult.category;
+  if (!scores[category]) return;
+
+  if (currentResult.isCorrect === isCorrect) {
+    currentResult.manualOverride = true;
+    renderResult();
+    return;
+  }
+
+  if (isCorrect) {
+    scores[category].correct++;
+    scores[category].wrong = Math.max(0, scores[category].wrong - 1);
+  } else {
+    scores[category].wrong++;
+    scores[category].correct = Math.max(0, scores[category].correct - 1);
+  }
+
+  currentResult.isCorrect = isCorrect;
+  currentResult.manualOverride = true;
+  updateScores();
+  renderResult();
+}
