@@ -15,6 +15,7 @@ let timerId = null;
 let buzzed = false;
 let waitingForNext = false;
 let currentResult = null;
+let categoriesCollapsed = false;
 
 // track scores for each category
 let scores = {};
@@ -87,15 +88,22 @@ if (detectMobile()) {
 
 function showCategorySelection() {
   const container = document.getElementById("category-select");
-  container.innerHTML = "<h3>Choose categories:</h3>";
+  if (!container) return;
+  container.innerHTML = "";
+
+  const optionsWrapper = document.createElement("div");
+  optionsWrapper.className = "category-options";
+
   availableCategories.forEach((cat) => {
     const id = "cat_" + cat.replace(/\s+/g, "_");
-    container.innerHTML += `
-      <label>
-        <input type="checkbox" id="${id}" value="${cat}" checked /> ${cat}
-      </label><br>
+    const label = document.createElement("label");
+    label.innerHTML = `
+      <input type="checkbox" id="${id}" value="${cat}" checked /> ${cat}
     `;
+    optionsWrapper.appendChild(label);
   });
+
+  container.appendChild(optionsWrapper);
 }
 
 function getSelectedCategories() {
@@ -439,7 +447,16 @@ document.addEventListener("keydown", (e) => {
 // Auto-render LaTeX on page load and setup event listeners
 document.addEventListener("DOMContentLoaded", function() {
   renderLatex(document.body);
-  
+
+  const toggleCategoriesBtn = document.getElementById("toggle-categories");
+  const categoryCard = document.getElementById("category-card");
+
+  function applyCategoryCollapse() {
+    if (!categoryCard || !toggleCategoriesBtn) return;
+    categoryCard.classList.toggle("collapsed", categoriesCollapsed);
+    toggleCategoriesBtn.textContent = categoriesCollapsed ? "Expand" : "Collapse";
+  }
+
   document.getElementById("start").addEventListener("click", async () => {
     updateScores();
     nextQuestion();
@@ -464,6 +481,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
   document.getElementById("mark-correct").addEventListener("click", () => applyManualMark(true));
   document.getElementById("mark-wrong").addEventListener("click", () => applyManualMark(false));
+
+  toggleCategoriesBtn?.addEventListener("click", () => {
+    categoriesCollapsed = !categoriesCollapsed;
+    applyCategoryCollapse();
+  });
+
+  applyCategoryCollapse();
 });
 
 function renderResult() {
