@@ -454,7 +454,8 @@ document.addEventListener("DOMContentLoaded", function() {
   function applyCategoryCollapse() {
     if (!categoryCard || !toggleCategoriesBtn) return;
     categoryCard.classList.toggle("collapsed", categoriesCollapsed);
-    toggleCategoriesBtn.textContent = categoriesCollapsed ? "Expand" : "Collapse";
+    toggleCategoriesBtn.setAttribute("aria-expanded", String(!categoriesCollapsed));
+    toggleCategoriesBtn.querySelector(".caret-icon").textContent = categoriesCollapsed ? "▸" : "▾";
   }
 
   document.getElementById("start").addEventListener("click", async () => {

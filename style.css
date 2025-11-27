@@ -42,7 +42,7 @@ body::before {
 .controls-row {
   display: flex;
   gap: 20px;
-  align-items: stretch;
+  align-items: flex-start;
   margin: 25px 0;
 }
 
@@ -235,6 +235,17 @@ input:disabled {
   min-width: auto;
   padding: 10px 14px;
   flex: 0;
+}
+
+.caret-icon {
+  display: inline-block;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+#category-card.collapsed .caret-icon {
+  transform: rotate(-90deg);
 }
 
 .btn.secondary:hover {
